@@ -25,7 +25,7 @@ class ProjectDB {
   });
 
   Map<String, dynamic> toMap() {
-    return{
+    return {
       'id': id,
       'name': name,
       'imagePath': imagePath,
@@ -38,17 +38,17 @@ class ProjectDB {
     };
   }
 
-  static ProjectDB fromMap(Map<String, dynamic>map) {
+  static ProjectDB fromMap(Map<String, dynamic> map) {
     return ProjectDB(
       id: map['id'],
-      name: map['name'],
-      imagePath: map['imagePath'],
-      date: map['creationDate'],
-      meanR: map['meanR'],
-      meanG: map['meanG'],
-      meanB: map['meanB'],
-      greenPixelCount: map['greenPixelCount'],
-      processedImageUrl: map['processedImageUrl'],
+      name: map['name'] ?? '', // `null` 값을 기본값으로 처리
+      imagePath: map['imagePath'] ?? '', // 기본값 처리
+      date: map['date'] ?? 'Unknown', // `null`이면 기본값 설정
+      meanR: map['meanR'] ?? 0.0,
+      meanG: map['meanG'] ?? 0.0,
+      meanB: map['meanB'] ?? 0.0,
+      greenPixelCount: map['greenPixelCount'] ?? 0.0,
+      processedImageUrl: map['processedImageUrl'] ?? '',
     );
   }
 }
@@ -67,7 +67,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'projectdb.db');
     return await openDatabase(
       path,
-      version: 2, // 버전 변경
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE projectsdb(
@@ -79,14 +79,26 @@ class DatabaseHelper {
             meanG REAL,
             meanB REAL,
             greenPixelCount REAL,
-            processedImageUrl TEXT,
+            processedImageUrl TEXT
           )
         ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
-          await db.execute('DROP TABLE IF EXISTS projectsdb');
-          await initDatabase(); // 테이블 재생성
+          await db.execute('DROP TABLE IF EXISTS projectsdb'); // 기존 테이블 삭제
+          await db.execute(''' 
+            CREATE TABLE projectsdb(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT,
+              imagePath TEXT,
+              date TEXT,
+              meanR REAL,
+              meanG REAL,
+              meanB REAL,
+              greenPixelCount REAL,
+              processedImageUrl TEXT
+            )
+          '''); // 테이블 재생성
         }
       },
     );
@@ -100,7 +112,7 @@ class DatabaseHelper {
   Future<List<ProjectDB>> getProjectsDB() async {
     Database db = await database;
     List<Map<String, dynamic>> maps = await db.query('projectsdb');
-    return maps.map((map) => ProjectDB.fromMap(map)).toList(); // fromMap 사용
+    return maps.map((map) => ProjectDB.fromMap(map)).toList();
   }
 
   Future<void> updateProjectDB(ProjectDB projectdb) async {

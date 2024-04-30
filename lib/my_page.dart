@@ -19,7 +19,7 @@ class MyPage extends StatefulWidget {
 
 class _MyPageState extends State<MyPage> {
   Future<void> createProjectOnServer(String projectName) async {
-    final url = Uri.parse('http://172.20.10.10:8080/upload');
+    final url = Uri.parse('http://192.168.19.254:8080/upload');
     final response = await http.post(url,
         headers: {"Content-Type": "application/json"},
         body: json.encode({'name': projectName}));
